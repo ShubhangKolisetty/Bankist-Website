@@ -1,8 +1,5 @@
 'use strict';
 
-///////////////////////////////////////
-// Modal window
-
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
@@ -40,45 +37,9 @@ document.addEventListener('keydown', function (e) {
 btnScrollTo.addEventListener('click', function (e) {
   const s1coords = section1.getBoundingClientRect();
 
-  // console.log(s1coords);
-  // console.log(e.target.getBoundingClientRect());
-  // console.log('Current scroll (X/Y)', windiw.pageXOffset, window.pageYOffset);
-  // console.log(
-  //   'height/width viewport',
-  //   document.documentElement.clientHeight,
-  //   document.documentElement.clientWidth
-  // );
-
   //scrolling
-  // window.scrollTo(
-  //   s1coords.left + window.pageXOffset,
-  //   s1coords.top + window.pageYOffset
-  // );
-
-  //old method
-  // window.scrollTo({
-  //   left: s1coords.left + window.pageXOffset,
-  //   top: s1coords.top + window.pageYOffset,
-  //   behavior: 'smooth',
-  // });
-
-  //modern way
   section1.scrollIntoView({ behavior: 'smooth' });
 });
-
-//SUBTOPIC Page navigation
-
-// document.querySelectorAll('.nav__link').forEach(function (el) {
-//   el.addEventListener('click', function (e) {
-//     e.preventDefault();
-//     const id = this.getAttribute('href');
-//     document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
-//   });
-// });
-
-//SUBTOPIC Event Delegation
-//1. Add event listener to common parent element
-//2. Determine what element originated the event
 
 document.querySelector('.nav__links').addEventListener('click', function (e) {
   e.preventDefault();
@@ -92,7 +53,6 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
 //SUBTOPIC Tabbed component
 
 tabsContainer.addEventListener('click', function (e) {
-  // e.preventDefault();
   const clicked = e.target.closest('.operations__tab');
 
   //Gaurd clause
@@ -126,30 +86,6 @@ const handleHover = function (e) {
 nav.addEventListener('mouseover', handleHover.bind(0.5));
 
 nav.addEventListener('mouseout', handleHover.bind(1));
-
-//SUBTOPIC Sticky navigation
-// const initialCoords = section1.getBoundingClientRect();
-
-// window.addEventListener('scroll', function () {
-//   if (window.scrollY > initialCoords.top) nav.classList.add('sticky');
-//   else nav.classList.remove('sticky');
-// });
-
-// SUBTOPIC sticky navigation: Intersection Observer API
-
-// const obsCallback = function (entries, observer) {
-//   entries.forEach(entry => {
-//     console.log(entry);
-//   });
-// };
-
-// const obsOptions = {
-//   root: null,
-//   threshold: [0, 0.2],
-// };
-
-// const observer = new IntersectionObserver(obsCallback, obsOptions);
-// observer.observe(section1);
 
 const header = document.querySelector('.header');
 const navHeight = nav.getBoundingClientRect().height;
@@ -217,113 +153,89 @@ const imgObserver = new IntersectionObserver(loadImg, {
 imgTargets.forEach(img => imgObserver.observe(img));
 
 //SUBTOPIC Slider
-const slides = document.querySelectorAll('.slide');
-const btnLeft = document.querySelector('.slider__btn--left');
-const btnRight = document.querySelector('.slider__btn--right');
 
-let curSlide = 0;
-const maxSlide = slides.length;
+const slider = function () {
+  const slides = document.querySelectorAll('.slide');
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotContainer = document.querySelector('.dots');
 
-const goToSlide = function (slide) {
-  slides.forEach(
-    (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
-  );
+  let curSlide = 0;
+  const maxSlide = slides.length;
+
+  //SUBTOPIC FUNCTIONS
+
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML(
+        'beforeend',
+        `<button class="dots__dot" data-slide="${i}"></button>`
+      );
+    });
+  };
+
+  const activateDot = function (slide) {
+    document
+      .querySelectorAll('.dots__dot')
+      .forEach(dot => dot.classList.remove('dots__dot--active'));
+
+    document
+      .querySelector(`.dots__dot[data-slide='${slide}']`)
+      .classList.add('dots__dot--active');
+  };
+
+  const goToSlide = function (slide) {
+    slides.forEach(
+      (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
+    );
+  };
+
+  //next slide
+  const nextSlide = function () {
+    if (curSlide === maxSlide - 1) {
+      curSlide = 0;
+    } else {
+      curSlide++;
+    }
+    goToSlide(curSlide);
+    activateDot(curSlide);
+  };
+
+  const prevSlide = function () {
+    if (curSlide === 0) {
+      curSlide = maxSlide - 1;
+    } else {
+      curSlide--;
+    }
+    activateDot(curSlide);
+    goToSlide(curSlide);
+  };
+
+  const init = function () {
+    goToSlide(0);
+    createDots();
+
+    activateDot(0);
+  };
+
+  init();
+
+  //SUBTOPIC EVENT HANDLERS
+  btnRight.addEventListener('click', nextSlide);
+  btnLeft.addEventListener('click', prevSlide);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') prevSlide();
+    if (e.key === 'ArrowRight') nextSlide();
+  });
+
+  dotContainer.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dots__dot')) {
+      const { slide } = e.target.dataset;
+      goToSlide(slide);
+      activateDot(slide);
+    }
+  });
 };
 
-goToSlide(0);
-
-//next slide
-const nextSlide = function () {
-  if (curSlide === maxSlide - 1) {
-    curSlide = 0;
-  } else {
-    curSlide++;
-  }
-  goToSlide(curSlide);
-};
-
-const prevSlide = function () {
-  if (curSlide === 0) {
-    curSlide = maxSlide - 1;
-  } else {
-    curSlide--;
-  }
-  goToSlide(curSlide);
-};
-
-btnRight.addEventListener('click', nextSlide);
-btnLeft.addEventListener('click', prevSlide);
-
-//TOPIC experimenting new topics
-/*
-const h1 = document.querySelector('h1');
-
-const alertH1 = function (e) {
-  alert('addEventListener: Great! You are reading the heading');
-};
-
-h1.addEventListener('mouseenter', alertH1);
-
-setTimeout(() => h1.removeEventListener('mouseenter', alertH1), 3000);
-
-//old way
-// h1.onmouseenter = function (e) {
-//   alert('onmouseenter: Great! You are reading the heading');
-// };
-
-// rgb(255,255,255)
-const randomInt = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1) + min);
-const randomColor = () =>
-  `rgba(${randomInt(0, 255)},${randomInt(0, 255)},${randomInt(0, 255)})`;
-console.log(randomColor(0, 255));
-
-document.querySelector('.nav__link').addEventListener('click', function (e) {
-  this.style.backgroundColor = randomColor();
-  console.log('LINK', e.target, e.currentTarget);
-
-  //stop propogation
-  // e.stopPropagation();
-});
-
-document.querySelector('.nav__links').addEventListener('click', function (e) {
-  this.style.backgroundColor = randomColor();
-  console.log('CONTAINER', e.target, e.currentTarget);
-});
-
-document.querySelector('.nav').addEventListener('click', function (e) {
-  this.style.backgroundColor = randomColor();
-  console.log('NAV', e.target, e.currentTarget);
-});
-
-// SUBTOPIC DOM traversing
-
-const h1 = document.querySelector('h1');
-
-// going downwards: selecting child elements
-console.log(h1.querySelectorAll('.highlight'));
-console.log(h1.childNodes);
-console.log(h1.children);
-h1.firstElementChild.style.color = 'white';
-h1.lastElementChild.style.color = 'blue';
-
-//going upwards: selecting parent elements
-console.log(h1.parentNode);
-console.log(h1.parentElement);
-
-h1.closest('.header').style.background = 'var(--gradient-secondary';
-
-h1.closest('h1').style.background = 'var(--gradient-primary';
-
-// going sideways: selecting siblings
-console.log(h1.previousElementSibling);
-console.log(h1.nextElementSibling);
-
-console.log(h1.previousSibling);
-console.log(h1.nextSibling);
-
-console.log(h1.parentElement.children);
-[...h1.parentElement.children].forEach(function (e) {
-  if (e !== h1) e.style.transform = 'scale(0.5)';
-});
-*/
+slider();
